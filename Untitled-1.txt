@@ -1,0 +1,26 @@
+#include <avr/io.h>
+#include <util/delay.h>
+
+#define F_CPU 1000000UL //1 MHz clock speed
+void AD_setup()
+{
+    ADCSRA |= (1 << ADEN) | (1 << ADPS2); //enable with prescalar  at 16 (65kHz conversion clock speed)
+    ADMUX |= 7 | (1 << REFS0);             // Vcc ( 5v) conversion scale
+}
+int main(void)
+{
+    AD_setup();
+    Serial.begin(9600);
+    while (1)
+    {
+        ADCSRA |= (1 << ADSC); //Start Conversion
+        while (!(ADCSRA & (1 << ADIF)))
+        {
+        }                      //wait for ADIF to go to 0, indicating conversion complete.
+        ADCSRA |= (1 << ADIF); //Reset ADIF to 1 for the next conversion
+        Serial.println(ADC);   // Print ADC conversion value
+        _delay_ms(512);
+    }
+}
+//revision: change  pre scalar to 16, giving conversion clock speed to about 65 kHz.  Data Sheet recommends speed between 50kHz and 200kHz.
+//Note simplified print.
